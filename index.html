@@ -1,0 +1,497 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #FF6B9D; --green: #6BCB77; --blue: #4D96FF;
+    --purple: #C77DFF; --orange: #FF9A3C;
+    --bg: #FFF9F0; --card: #FFFFFF; --text: #3D2C5A; --text2: #8B7FA8;
+    --radius: 20px; --font: 'Mochiy Pop One', sans-serif;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+  .screen { display: none; padding: 16px; max-width: 400px; margin: 0 auto; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  #screen-login { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 24px; }
+  .app-title { font-size: 26px; color: var(--text); text-align: center; line-height: 1.5; }
+  .app-title span { display: block; font-size: 52px; margin-bottom: 4px; }
+  .google-btn { display: flex; align-items: center; gap: 12px; background: white; border: 2px solid #E0D8F0; border-radius: var(--radius); padding: 14px 28px; font-family: var(--font); font-size: 15px; color: var(--text); cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.12s, box-shadow 0.12s; }
+  .google-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+  .google-btn:active { transform: translateY(1px); }
+
+  #screen-mode { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 20px; }
+  .mode-title { font-size: 22px; color: var(--text); text-align: center; line-height: 1.5; }
+  .mode-title span { display: block; font-size: 40px; }
+  .user-info { font-size: 11px; color: var(--text2); text-align: center; }
+  .mode-btn { width: 280px; padding: 18px 24px; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 17px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 0 rgba(0,0,0,0.12); }
+  .mode-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.12); }
+  .mode-btn.child { background: var(--pink); color: white; }
+  .mode-btn.parent { background: var(--blue); color: white; }
+  .mode-btn.logout { background: #F0EDF8; color: var(--text2); font-size: 13px; justify-content: center; box-shadow: none; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-top: 8px; }
+  .header-title { font-size: 16px; color: var(--text); }
+  .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 10px; font-family: var(--font); }
+
+  .balance-card { background: linear-gradient(135deg, var(--purple), var(--pink)); border-radius: 24px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; }
+  .balance-card::before { content: '⭐'; position: absolute; right: -10px; top: -10px; font-size: 80px; opacity: 0.15; }
+  .balance-label { color: rgba(255,255,255,0.9); font-size: 12px; }
+  .balance-amount { color: white; font-size: 44px; line-height: 1.1; margin: 4px 0; }
+  .balance-amount span { font-size: 24px; }
+  .goal-bar-label { color: rgba(255,255,255,0.9); font-size: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .goal-bar { background: rgba(255,255,255,0.25); border-radius: 99px; height: 10px; overflow: hidden; }
+  .goal-bar-fill { background: white; height: 100%; border-radius: 99px; transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+
+  .section-title { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+  .chore-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .chore-btn { background: var(--card); border: 2.5px solid transparent; border-radius: var(--radius); padding: 16px 12px; cursor: pointer; text-align: center; transition: transform 0.12s, box-shadow 0.12s; box-shadow: 0 3px 10px rgba(0,0,0,0.06); position: relative; font-family: var(--font); }
+  .chore-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+  .chore-btn:active { transform: scale(0.96); }
+  .chore-emoji { font-size: 32px; display: block; margin-bottom: 6px; }
+  .chore-name { font-size: 12px; color: var(--text); display: block; margin-bottom: 3px; }
+  .chore-pts { font-size: 15px; }
+  .pending-badge { position: absolute; top: 8px; right: 8px; background: var(--orange); color: white; font-size: 10px; padding: 2px 6px; border-radius: 99px; font-family: var(--font); }
+
+  .notif-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .notif-item { background: var(--card); border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .notif-emoji { font-size: 26px; }
+  .notif-info { flex: 1; }
+  .notif-title { font-size: 13px; color: var(--text); }
+  .notif-sub { font-size: 11px; color: var(--text2); }
+  .notif-actions { display: flex; gap: 6px; }
+  .btn-ok { background: var(--green); color: white; border: none; border-radius: 10px; padding: 7px 14px; font-family: var(--font); font-size: 12px; cursor: pointer; }
+  .btn-ng { background: #FFE0E0; color: #E05555; border: none; border-radius: 10px; padding: 7px 10px; font-family: var(--font); font-size: 12px; cursor: pointer; }
+
+  .manage-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .manage-item { background: var(--card); border-radius: 16px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .manage-emoji { font-size: 24px; }
+  .manage-name { flex: 1; font-size: 13px; color: var(--text); }
+  .manage-pts-edit { width: 58px; background: #F5F0FF; border: 2px solid #D9CFFF; border-radius: 8px; padding: 4px 8px; font-family: var(--font); font-size: 13px; color: var(--text); text-align: center; }
+  .manage-del { background: #FFE8F0; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+
+  .add-chore-form { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .form-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .form-input { flex: 1; background: #F5F0FF; border: 2px solid #D9CFFF; border-radius: 12px; padding: 10px 14px; font-family: var(--font); font-size: 13px; color: var(--text); outline: none; }
+  .form-input:focus { border-color: var(--purple); }
+  .emoji-select { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .emoji-opt { font-size: 22px; padding: 4px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+  .emoji-opt.selected { border-color: var(--purple); background: #F5F0FF; }
+
+  .big-btn { width: 100%; padding: 15px; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 14px; cursor: pointer; transition: transform 0.12s, box-shadow 0.12s; box-shadow: 0 4px 0 rgba(0,0,0,0.12); margin-bottom: 10px; }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.12); }
+  .big-btn.green { background: var(--green); color: white; }
+  .big-btn.orange { background: var(--orange); color: white; }
+  .big-btn.pink { background: var(--pink); color: white; }
+  .big-btn.blue { background: var(--blue); color: white; }
+
+  .goal-form { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 8px; align-items: center; }
+
+  #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--text); color: white; padding: 12px 24px; border-radius: 99px; font-size: 12px; font-family: var(--font); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index: 999; white-space: nowrap; pointer-events: none; }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  .history-list { display: flex; flex-direction: column; gap: 6px; }
+  .history-item { background: var(--card); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text2); box-shadow: 0 1px 4px rgba(0,0,0,0.04); font-family: var(--font); }
+  .history-item span:last-child { margin-left: auto; color: var(--green); }
+  .empty-state { text-align: center; padding: 28px; color: var(--text2); font-size: 12px; }
+  .empty-state div { font-size: 38px; margin-bottom: 8px; }
+
+  .pin-overlay { position: fixed; inset: 0; background: rgba(61,44,90,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .pin-box { background: white; border-radius: 24px; padding: 28px 24px; text-align: center; width: 280px; }
+  .pin-title { font-size: 16px; color: var(--text); margin-bottom: 6px; font-family: var(--font); }
+  .pin-sub { font-size: 11px; color: var(--text2); margin-bottom: 16px; font-family: var(--font); }
+  .pin-dots { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: #E8E0F0; transition: background 0.15s; }
+  .pin-dot.filled { background: var(--purple); }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pin-key { background: #F5F0FF; border: none; border-radius: 12px; padding: 14px; font-family: var(--font); font-size: 18px; cursor: pointer; color: var(--text); }
+  .pin-key:active { background: #D9CFFF; }
+  .pin-key.del { background: #FFE8F0; color: var(--pink); }
+  .pin-error { color: #E05555; font-size: 11px; font-family: var(--font); height: 16px; margin-bottom: 4px; }
+
+  .loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 200; }
+  .loading-spinner { width: 48px; height: 48px; border: 4px solid #E8E0F0; border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--text2); font-family: var(--font); }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-left: 6px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .scrollable { overflow-y: auto; max-height: calc(100vh - 80px); padding-bottom: 80px; }
+</style>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div style="font-size:52px;">🏠</div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">よみこみ中...</div>
+</div>
+
+<div id="toast"></div>
+
+<div class="pin-overlay" id="pin-overlay" style="display:none;">
+  <div class="pin-box">
+    <div class="pin-title">🔐 おや認証</div>
+    <div class="pin-sub">4けたのPINを入れてね</div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key del" onclick="pinKey('C')">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('X')" style="background:#F0F0F0;color:var(--text2);">✕</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-login" class="screen">
+  <div class="app-title"><span>🏠</span>おてつだいバンク</div>
+  <button class="google-btn" onclick="loginWithGoogle()">
+    <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Googleでログイン
+  </button>
+</div>
+
+<div id="screen-mode" class="screen">
+  <div class="mode-title"><span>🏠</span>おてつだいバンク</div>
+  <div class="user-info" id="user-info"></div>
+  <button class="mode-btn child" onclick="goChild()"><span style="font-size:26px;">🧒</span>こどもモード</button>
+  <button class="mode-btn parent" onclick="showPin()"><span style="font-size:26px;">👨‍👩‍👧</span>おやモード</button>
+  <button class="mode-btn logout" onclick="doLogout()">ログアウト</button>
+</div>
+
+<div id="screen-child" class="screen">
+  <div class="header">
+    <button class="back-btn" onclick="goMode()">←</button>
+    <div class="header-title">🧒 こどもモード<span class="sync-dot"></span></div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="scrollable">
+    <div class="balance-card">
+      <div class="balance-label">💰 いまのポイント</div>
+      <div class="balance-amount" id="child-balance-disp"><span>★</span>0</div>
+      <div style="margin-top:12px;">
+        <div class="goal-bar-label"><span id="goal-label">もくひょう: ★0</span><span id="goal-pct">0%</span></div>
+        <div class="goal-bar"><div class="goal-bar-fill" id="goal-bar-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="section-title">🎯 もくひょうをせってい</div>
+    <div class="goal-form">
+      <input class="form-input" type="number" id="goal-input" placeholder="目標ポイント" min="1" style="flex:1;">
+      <button class="big-btn blue" style="width:auto;padding:10px 16px;margin:0;" onclick="setGoal()">セット</button>
+    </div>
+    <div class="section-title">✨ おてつだいする</div>
+    <div class="chore-grid" id="child-chore-grid"></div>
+    <div class="section-title">📖 きろく</div>
+    <div class="history-list" id="child-history"></div>
+  </div>
+</div>
+
+<div id="screen-parent" class="screen">
+  <div class="header">
+    <button class="back-btn" onclick="goMode()">←</button>
+    <div class="header-title">👨‍👩‍👧 おやモード<span class="sync-dot"></span></div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="scrollable">
+    <div class="balance-card" style="background:linear-gradient(135deg,#4D96FF,#6BCB77);">
+      <div class="balance-label">💰 げんざいのポイント</div>
+      <div class="balance-amount" id="parent-balance-disp"><span>★</span>0</div>
+    </div>
+    <div class="section-title">🔔 しょうにん待ち</div>
+    <div class="notif-list" id="pending-list"></div>
+    <button class="big-btn orange" onclick="payOut()">💸 しはらい & リセット</button>
+    <div class="section-title">⚙️ おてつだいの管理</div>
+    <div class="manage-list" id="manage-list"></div>
+    <div class="section-title">➕ おてつだいを追加</div>
+    <div class="add-chore-form">
+      <div class="emoji-select" id="emoji-select"></div>
+      <div class="form-row">
+        <input class="form-input" id="new-chore-name" placeholder="なまえ（例：お皿洗い）">
+        <input class="form-input" id="new-chore-pts" type="number" placeholder="★" min="1" style="width:68px;flex:none;">
+      </div>
+      <button class="big-btn pink" onclick="addChore()" style="margin-bottom:0;">追加する ✨</button>
+    </div>
+    <div class="section-title">📖 きろく</div>
+    <div class="history-list" id="parent-history"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, onSnapshot, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAChv-a644PTJ0cGBdOlVjJyl6pzdHggbw",
+    authDomain: "otetsudat-bank.firebaseapp.com",
+    projectId: "otetsudat-bank",
+    storageBucket: "otetsudat-bank.firebasestorage.app",
+    messagingSenderId: "215701760013",
+    appId: "1:215701760013:web:b8c1555f71d9e230c28d44"
+  };
+
+  const EMOJIS = ['🛁','🍽️','🧹','🌿','🐕','🧺','🚽','🪟','🍳','📚','👟','🗑️'];
+  const DEFAULT_CHORES = [
+    { id:1, emoji:'🛁', name:'お風呂掃除', pts:30 },
+    { id:2, emoji:'🍽️', name:'お皿洗い', pts:20 },
+    { id:3, emoji:'🧹', name:'お部屋掃除', pts:25 },
+    { id:4, emoji:'🌿', name:'水やり', pts:10 },
+  ];
+  const PARENT_PIN = '1234';
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let uid = null;
+  let state = { balance:0, goal:0, chores:[...DEFAULT_CHORES], pending:[], history:[], nextId:10 };
+  let unsubscribe = null;
+  let selectedEmoji = EMOJIS[0];
+  let pinBuffer = '', pinCallback = null;
+
+  window.loginWithGoogle = loginWithGoogle;
+  window.doLogout = doLogout;
+  window.goChild = goChild;
+  window.goMode = goMode;
+  window.showPin = showPin;
+  window.pinKey = pinKey;
+  window.applyChore = applyChore;
+  window.approve = approve;
+  window.reject = reject;
+  window.payOut = payOut;
+  window.setGoal = setGoal;
+  window.addChore = addChore;
+  window.delChore = delChore;
+  window.updatePts = updatePts;
+  window.selectEmoji = selectEmoji;
+
+  onAuthStateChanged(auth, user => {
+    document.getElementById('loading-overlay').style.display = 'none';
+    if (user) {
+      uid = user.uid;
+      document.getElementById('user-info').textContent = user.displayName + ' でログイン中';
+      startSync();
+      show('screen-mode');
+    } else {
+      uid = null;
+      if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+      show('screen-login');
+    }
+  });
+
+  async function loginWithGoogle() {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch(e) {
+      toast('⚠️ ログインに失敗したよ… もう一度試してね');
+      console.error(e);
+    }
+  }
+
+  async function doLogout() {
+    await signOut(auth);
+  }
+
+  function getDocRef() {
+    return doc(db, 'families', uid, 'data', 'main');
+  }
+
+  function startSync() {
+    if (unsubscribe) unsubscribe();
+    unsubscribe = onSnapshot(getDocRef(), snap => {
+      if (snap.exists()) {
+        state = Object.assign({ balance:0, goal:0, chores:[...DEFAULT_CHORES], pending:[], history:[], nextId:10 }, snap.data());
+      } else {
+        saveToFirestore();
+      }
+      const active = document.querySelector('.screen.active');
+      if (active?.id === 'screen-child') renderChild();
+      if (active?.id === 'screen-parent') renderParent();
+    }, err => {
+      console.error(err);
+      toast('⚠️ 同期エラー: ' + err.code);
+    });
+  }
+
+  async function saveToFirestore() {
+    if (!uid) return;
+    try { await setDoc(getDocRef(), state); } catch(e) { console.error(e); toast('⚠️ 保存エラー'); }
+  }
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  function goMode() { show('screen-mode'); }
+  function goChild() { show('screen-child'); renderChild(); }
+  function goParent() { show('screen-parent'); renderParent(); }
+
+  function showPin() {
+    pinBuffer = ''; pinCallback = goParent;
+    updatePinDots();
+    document.getElementById('pin-error').textContent = '';
+    document.getElementById('pin-overlay').style.display = 'flex';
+  }
+  function pinKey(k) {
+    if (k==='X') { document.getElementById('pin-overlay').style.display='none'; return; }
+    if (k==='C') { pinBuffer=pinBuffer.slice(0,-1); updatePinDots(); return; }
+    if (pinBuffer.length>=4) return;
+    pinBuffer+=k; updatePinDots();
+    if (pinBuffer.length===4) {
+      if (pinBuffer===PARENT_PIN) {
+        document.getElementById('pin-overlay').style.display='none';
+        pinCallback && pinCallback();
+      } else {
+        document.getElementById('pin-error').textContent='ちがうよ！もういちど';
+        pinBuffer=''; updatePinDots();
+      }
+    }
+  }
+  function updatePinDots() {
+    for (let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('filled', i<pinBuffer.length);
+  }
+
+  function renderChild() {
+    document.getElementById('child-balance-disp').innerHTML = '<span>★</span>' + state.balance;
+    if (state.goal > 0) {
+      const pct = Math.min(100, Math.round(state.balance / state.goal * 100));
+      document.getElementById('goal-label').textContent = 'もくひょう: ★' + state.goal;
+      document.getElementById('goal-pct').textContent = pct + '%';
+      document.getElementById('goal-bar-fill').style.width = pct + '%';
+      document.getElementById('goal-input').value = state.goal;
+    }
+    const colors = ['#FF6B9D','#6BCB77','#4D96FF','#FFD93D','#C77DFF','#FF9A3C'];
+    document.getElementById('child-chore-grid').innerHTML = state.chores.map((c,i) => {
+      const hasPending = state.pending.some(p => p.choreId === c.id);
+      return `<button class="chore-btn" style="border-color:${colors[i%colors.length]}33;" onclick="applyChore(${c.id})">
+        ${hasPending ? `<span class="pending-badge">待機中</span>` : ''}
+        <span class="chore-emoji">${c.emoji}</span>
+        <span class="chore-name">${c.name}</span>
+        <span class="chore-pts" style="color:${colors[i%colors.length]}">★${c.pts}</span>
+      </button>`;
+    }).join('');
+    renderHistory('child-history');
+  }
+
+  function renderParent() {
+    document.getElementById('parent-balance-disp').innerHTML = '<span>★</span>' + state.balance;
+    const pl = document.getElementById('pending-list');
+    if (!state.pending.length) {
+      pl.innerHTML = '<div class="empty-state"><div>🎉</div>しょうにん待ちはないよ！</div>';
+    } else {
+      pl.innerHTML = state.pending.map(p => {
+        const c = state.chores.find(x => x.id===p.choreId);
+        return `<div class="notif-item">
+          <span class="notif-emoji">${c?.emoji||'❓'}</span>
+          <div class="notif-info"><div class="notif-title">${c?.name||'?'}</div><div class="notif-sub">★${c?.pts||0} ポイント</div></div>
+          <div class="notif-actions">
+            <button class="btn-ok" onclick="approve('${p.id}')">OK!</button>
+            <button class="btn-ng" onclick="reject('${p.id}')">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    document.getElementById('manage-list').innerHTML = state.chores.map(c => `
+      <div class="manage-item">
+        <span class="manage-emoji">${c.emoji}</span>
+        <span class="manage-name">${c.name}</span>
+        <input class="manage-pts-edit" type="number" value="${c.pts}" min="1" onchange="updatePts(${c.id},this.value)">
+        <button class="manage-del" onclick="delChore(${c.id})">🗑️</button>
+      </div>`).join('');
+    document.getElementById('emoji-select').innerHTML = EMOJIS.map(e =>
+      `<span class="emoji-opt ${e===selectedEmoji?'selected':''}" onclick="selectEmoji('${e}')">${e}</span>`).join('');
+    renderHistory('parent-history');
+  }
+
+  function renderHistory(id) {
+    const el = document.getElementById(id);
+    const recent = [...(state.history||[])].reverse().slice(0,10);
+    el.innerHTML = recent.length
+      ? recent.map(h => `<div class="history-item"><span>${h.emoji}</span><span>${h.name}</span><span style="font-size:11px;">${h.date}</span><span>+★${h.pts}</span></div>`).join('')
+      : '<div class="empty-state"><div>📭</div>まだきろくがないよ</div>';
+  }
+
+  async function applyChore(id) {
+    if (state.pending.some(p => p.choreId===id)) { toast('⏳ しょうにん待ちだよ！'); return; }
+    state.pending = [...state.pending, { id:'p'+Date.now(), choreId:id }];
+    await saveToFirestore();
+    toast('📨 おやにおねがいしたよ！');
+  }
+
+  async function approve(pid) {
+    const p = state.pending.find(x => x.id===pid); if (!p) return;
+    const c = state.chores.find(x => x.id===p.choreId); if (!c) return;
+    state.balance += c.pts;
+    state.pending = state.pending.filter(x => x.id!==pid);
+    const now = new Date();
+    state.history = [...(state.history||[]), { emoji:c.emoji, name:c.name, pts:c.pts, date:`${now.getMonth()+1}/${now.getDate()}` }];
+    await saveToFirestore();
+    toast('✅ しょうにんしたよ！ +★' + c.pts);
+  }
+
+  async function reject(pid) {
+    state.pending = state.pending.filter(x => x.id!==pid);
+    await saveToFirestore();
+    toast('❌ きゃんせるしたよ');
+  }
+
+  async function payOut() {
+    if (!state.balance) { toast('💸 ポイントがないよ！'); return; }
+    if (!confirm(`★${state.balance} ポイントをしはらいして リセットしますか？`)) return;
+    toast('🎉 ★' + state.balance + ' しはらいしました！');
+    state.balance = 0; state.history = [];
+    await saveToFirestore();
+  }
+
+  async function setGoal() {
+    const v = parseInt(document.getElementById('goal-input').value);
+    if (!v||v<1) { toast('すうじを入れてね！'); return; }
+    state.goal = v;
+    await saveToFirestore();
+    toast('🎯 もくひょうをセットしたよ！');
+  }
+
+  async function addChore() {
+    const name = document.getElementById('new-chore-name').value.trim();
+    const pts = parseInt(document.getElementById('new-chore-pts').value);
+    if (!name||!pts||pts<1) { toast('なまえとポイントを入れてね！'); return; }
+    state.chores = [...state.chores, { id:state.nextId++, emoji:selectedEmoji, name, pts }];
+    document.getElementById('new-chore-name').value = '';
+    document.getElementById('new-chore-pts').value = '';
+    await saveToFirestore();
+    toast('✨ 追加したよ！');
+  }
+
+  async function delChore(id) {
+    state.chores = state.chores.filter(c => c.id!==id);
+    state.pending = state.pending.filter(p => p.choreId!==id);
+    await saveToFirestore();
+  }
+
+  async function updatePts(id, val) {
+    state.chores = state.chores.map(c => c.id===id ? {...c, pts:parseInt(val)||c.pts} : c);
+    await saveToFirestore();
+  }
+
+  function selectEmoji(e) {
+    selectedEmoji = e;
+    document.querySelectorAll('.emoji-opt').forEach(el => el.classList.toggle('selected', el.textContent===e));
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  }
+</script>
